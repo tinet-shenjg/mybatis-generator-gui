@@ -6,7 +6,9 @@ import org.mybatis.generator.exception.ShellException;
 import org.mybatis.generator.internal.DefaultShellCallback;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
@@ -18,10 +20,8 @@ import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
  */
 public class CommonDAOInterfacePlugin extends PluginAdapter {
 
-    private static final String DEFAULT_DAO_SUPER_CLASS = ".MyBatisBaseDao";
-    private static final FullyQualifiedJavaType PARAM_ANNOTATION_TYPE = new FullyQualifiedJavaType("org.apache.ibatis.annotations.Param");
+    private static final String DEFAULT_DAO_SUPER_CLASS = ".BaseDao";
     private static final FullyQualifiedJavaType LIST_TYPE = FullyQualifiedJavaType.getNewListInstance();
-    private static final FullyQualifiedJavaType SERIALIZEBLE_TYPE = new FullyQualifiedJavaType("java.io.Serializable");
 
     private List<Method> methods = new ArrayList<>();
 
@@ -46,23 +46,20 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
         Interface mapperInterface = new Interface(daoTargetPackage + DEFAULT_DAO_SUPER_CLASS);
 
         if (stringHasValue(daoTargetPackage)) {
-            mapperInterface.addImportedType(PARAM_ANNOTATION_TYPE);
             mapperInterface.addImportedType(LIST_TYPE);
-            mapperInterface.addImportedType(SERIALIZEBLE_TYPE);
 
             mapperInterface.setVisibility(JavaVisibility.PUBLIC);
             mapperInterface.addJavaDocLine("/**");
-            mapperInterface.addJavaDocLine(" * " + "DAO公共基类，由MybatisGenerator自动生成请勿修改");
-            mapperInterface.addJavaDocLine(" * " + "@param <Model> The Model Class 这里是泛型不是Model类");
-            mapperInterface.addJavaDocLine(" * " + "@param <PK> The Primary Key Class 如果是无主键，则可以用Model来跳过，如果是多主键则是Key类");
-			if (isUseExample()) {
-				mapperInterface.addJavaDocLine(" * " + "@param <E> The Example Class");
-			}
+            mapperInterface.addJavaDocLine(" * " + "DAO公共基类");
+            mapperInterface.addJavaDocLine(" * " + "@param <T> ");
+            mapperInterface.addJavaDocLine(" * " + "@param <ID> 实体主键泛型");
+            mapperInterface.addJavaDocLine(" * " + "@author shenjiangang");
+            mapperInterface.addJavaDocLine(" * Created by " + date2Str(new Date()));
             mapperInterface.addJavaDocLine(" */");
 
             FullyQualifiedJavaType daoBaseInterfaceJavaType = mapperInterface.getType();
-            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("Model"));
-            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("PK extends Serializable"));
+            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("T"));
+            daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("ID"));
 			if (isUseExample()) {
 				daoBaseInterfaceJavaType.addTypeArgument(new FullyQualifiedJavaType("E"));
 			}
@@ -78,7 +75,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
                 CompilationUnit compilationUnit = generatedJavaFile.getCompilationUnit();
                 FullyQualifiedJavaType type = compilationUnit.getType();
                 String modelName = type.getShortName();
-                if (modelName.endsWith("DAO")) {
+                if (modelName.endsWith("Dao")) {
                 }
             }
             GeneratedJavaFile mapperJavafile = new GeneratedJavaFile(mapperInterface, daoTargetDir, javaFileEncoding, javaFormatter);
@@ -101,7 +98,10 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
                                    TopLevelClass topLevelClass,
                                    IntrospectedTable introspectedTable) {
         interfaze.addJavaDocLine("/**");
-        interfaze.addJavaDocLine(" * " + interfaze.getType().getShortName() + "继承基类");
+        interfaze.addJavaDocLine(" * " + interfaze.getType().getShortName() + "   继承基类");
+        interfaze.addJavaDocLine(" * ");
+        interfaze.addJavaDocLine(" * @author shenjiangang");
+        interfaze.addJavaDocLine(" * Created by " + date2Str(new Date()));
         interfaze.addJavaDocLine(" */");
 
         String daoSuperClass = interfaze.getType().getPackageName() + DEFAULT_DAO_SUPER_CLASS;
@@ -114,7 +114,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
         daoSuperType.addTypeArgument(baseModelJavaType);
 
         FullyQualifiedJavaType primaryKeyTypeJavaType = null;
-        if (introspectedTable.getPrimaryKeyColumns().size() > 1) {
+        if (introspectedTable.getPrimaryKeyColumns().size() > 10) {
             primaryKeyTypeJavaType = new FullyQualifiedJavaType(targetPackage + "." + domainObjectName + "Key");
         }else if(introspectedTable.hasPrimaryKeyColumns()){
             primaryKeyTypeJavaType = introspectedTable.getPrimaryKeyColumns().get(0).getFullyQualifiedJavaType();
@@ -151,13 +151,13 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
 
     private void interceptPrimaryKeyParam(Method method) {
         method.getParameters().clear();
-        method.addParameter(new Parameter(new FullyQualifiedJavaType("PK"), "id"));
+        method.addParameter(new Parameter(new FullyQualifiedJavaType("ID"), "id"));
         methods.add(method);
     }
 
     private void interceptModelParam(Method method) {
         method.getParameters().clear();
-        method.addParameter(new Parameter(new FullyQualifiedJavaType("Model"), "record"));
+        method.addParameter(new Parameter(new FullyQualifiedJavaType("T"), "record"));
         methods.add(method);
     }
 
@@ -168,7 +168,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
 				interceptExampleParam(method);
 			}else{
 				method.getParameters().clear();
-				Parameter parameter1 = new Parameter(new FullyQualifiedJavaType("Model"), "record");
+				Parameter parameter1 = new Parameter(new FullyQualifiedJavaType("T"), "record");
 				parameter1.addAnnotation("@Param(\"record\")");
 				method.addParameter(parameter1);
 
@@ -220,7 +220,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
                                                                  Interface interfaze, IntrospectedTable introspectedTable) {
         if (isUseExample()) {
 			interceptExampleParam(method);
-			method.setReturnType(new FullyQualifiedJavaType("List<Model>"));
+			method.setReturnType(new FullyQualifiedJavaType("List<T>"));
 		}
         return false;
     }
@@ -230,7 +230,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
                                                                     Interface interfaze, IntrospectedTable introspectedTable) {
         if (isUseExample()) {
 			interceptExampleParam(method);
-			method.setReturnType(new FullyQualifiedJavaType("List<Model>"));
+			method.setReturnType(new FullyQualifiedJavaType("List<T>"));
 		}
         return false;
     }
@@ -239,7 +239,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
     public boolean clientSelectByPrimaryKeyMethodGenerated(Method method,
                                                            Interface interfaze, IntrospectedTable introspectedTable) {
     	interceptPrimaryKeyParam(method);
-        method.setReturnType(new FullyQualifiedJavaType("Model"));
+        method.setReturnType(new FullyQualifiedJavaType("T"));
         return false;
     }
 
@@ -312,5 +312,10 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
     public boolean clientInsertSelectiveMethodGenerated(Method method, Interface interfaze, IntrospectedTable introspectedTable) {
         interceptModelParam(method);
         return false;
+    }
+
+    private String date2Str(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        return sdf.format(date);
     }
 }
