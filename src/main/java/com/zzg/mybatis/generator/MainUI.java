@@ -15,7 +15,7 @@ import java.net.URL;
  * 本软件要求jkd版本大于1.8.0.40
  */
 public class MainUI extends Application {
-	
+
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		ConfigHelper.createEmptyFiles();
