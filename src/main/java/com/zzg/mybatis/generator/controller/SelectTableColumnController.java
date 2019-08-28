@@ -75,7 +75,9 @@ public class SelectTableColumnController extends BaseFXController {
                 if (!item.getChecked()) {
                     IgnoredColumn ignoredColumn = new IgnoredColumn(item.getColumnName());
                     ignoredColumns.add(ignoredColumn);
-                } else if (item.getTypeHandle() != null || item.getJavaType() != null || item.getPropertyName() != null) { // unchecked and have typeHandler value
+                } else if (item.getTypeHandle() != null
+                        || item.getJavaType() != null
+                        || item.getPropertyName() != null) { // unchecked and have typeHandler value
                     ColumnOverride columnOverride = new ColumnOverride(item.getColumnName());
                     columnOverride.setTypeHandler(item.getTypeHandle());
                     columnOverride.setJavaProperty(item.getPropertyName());
