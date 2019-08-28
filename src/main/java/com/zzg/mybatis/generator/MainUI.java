@@ -7,10 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.net.URL;
 
 /**
@@ -18,9 +15,7 @@ import java.net.URL;
  * 本软件要求jkd版本大于1.8.0.40
  */
 public class MainUI extends Application {
-
-	private static final Logger _LOG = LoggerFactory.getLogger(MainUI.class);
-
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		ConfigHelper.createEmptyFiles();
