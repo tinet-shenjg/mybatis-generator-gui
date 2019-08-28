@@ -50,7 +50,7 @@ public class CommonDAOInterfacePlugin extends PluginAdapter {
 
             mapperInterface.setVisibility(JavaVisibility.PUBLIC);
             mapperInterface.addJavaDocLine("/**");
-            mapperInterface.addJavaDocLine(" * " + "DAO公共基类");
+            mapperInterface.addJavaDocLine(" * " + "Mapper公共基类");
             mapperInterface.addJavaDocLine(" * " + "@param <T> ");
             mapperInterface.addJavaDocLine(" * " + "@param <ID> 实体主键泛型");
             mapperInterface.addJavaDocLine(" * " + "@author shenjiangang");
